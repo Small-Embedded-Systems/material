@@ -1,0 +1,326 @@
+%% -*- latex -*-
+\documentclass[a4paper]{tufte-handout}
+
+\usepackage[british]{babel}
+\usepackage{booktabs}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric}
+\usepackage{tikz-timing}
+\usepackage{minted}
+\usepackage{graphicx}
+\usepackage{natbib}
+\usepackage{siunitx}
+\usepackage[theorems,skins]{tcolorbox}
+\tcbset{enhanced,title filled}
+\newtcbtheorem{exercise}{Exercise}{drop fuzzy shadow}{ex}
+\newtcbtheorem{question}{Question}{drop fuzzy shadow}{q}
+\usepackage{manfnt}
+\hypersetup{colorlinks,urlcolor=DarkRed}
+\usepackage{stackengine}
+\usepackage{scalerel}
+
+\title{Starting Embedded C Programming\\\small{CM0506 Small Embedded Systems}}
+\author{Dr Alun Moon}
+\date{Seminar 1}
+
+\definecolor{code}{wave}{602}
+%\definecolor{cmd}{wave}{528}
+\definecolor{cmd}{named}{SkyBlue}
+
+\graphicspath{{screenshots/}}
+\begin{document}
+\maketitle
+\setlength{\parskip}{0.5em}
+\setlength{\parindent}{0pt}
+
+\newcommand\dangersign[1][2ex]{%
+  \renewcommand\stacktype{L}%
+  \scaleto{\stackon[1.3pt]{\color{red}$\triangle$}{\tiny!}}{#1}%
+}
+
+\begin{abstract}
+  This exercise will introduce you to using the development
+  environment to compile, build, downnload, and debug code on the LPC4088
+  used in S2.  Along the way you will see some of the subtle
+  differences between Java and C.  The biggest difference is not one
+  between C and Java, but between code run on the PC (Java) and code
+  run in an embedded environment.
+\end{abstract}
+\section{Edit -- Save -- Build -- Load -- Debug, cycle}
+Unlike the PC environment where you can make changes to your code,
+re-run it, and see the effects.  Embedded systems programming has more
+steps, each critical, but easy to miss coming from something like
+BlueJ.
+
+The principle steps are:
+\begin{description}
+\item[Edit] make changes to your code
+\item[Save] save the changes
+\item[Build] (re)build the program, this itself has several steps:
+  \begin{description}
+  \item[Compile] the C code into processor instructions
+  \item[Assemble] any low level assembler code into processor
+    instructions
+  \item[Link] the binaries together, resolving address of storage and
+    function calls
+  \end{description}
+\item[Load] the completed program into the memory of the target device
+  (LPC4088)
+\item[Debug] Check the code for correct operation, using the debugger
+  to inspect the code execution and contents of variables.  Identify
+  the causes of any incorrect behavior.
+\end{description}
+
+\section{GitHub}
+\newthought{For this module we will be using \emph{Git} version
+  control software and \emph{GitHub} as a sofware repository.}
+
+For this exercise you  will need the code found at
+\url{https://github.com/dr-alun-moon/embeddedC} (see figure
+\ref{fig:github}.  For now use the option to download a zip-file of
+the archived code.  
+
+\begin{figure}
+  \flushright
+  \includegraphics[width=\textwidth]{web-download}
+  \caption{GitHub repository}
+  \label{fig:github}
+\end{figure}
+
+Once you have the code downloaded, extract the files from the
+zip-file\marginnote[-4em]{\begin{tcolorbox}[colframe=Red]
+    \dangersign[4ex]    It won't work if you just view the files, they \emph{must} be
+    unpacked.
+  \end{tcolorbox}}.  Once you have them on the disk you
+should see something like figure \ref{fig:unpacked}.
+\begin{figure}[h]
+  \flushright
+  \includegraphics[width=\textwidth]{Unpacked}
+  \caption{Unpacked project}
+  \label{fig:unpacked}
+\end{figure}
+
+Start the Keil {$\mu$Vision} IDE from the start menu (figure \ref{fig:uvision}).
+\begin{figure}[h]
+  \flushright
+  \includegraphics{keil}
+  \caption{Keil $\mu$Vision}
+  \label{fig:uvision}
+\end{figure}
+Then use the ``Project Open'' menu to open the project you unpack in
+the previous step (figure \ref{fig:open-project}).
+\begin{figure}[h]
+  \flushright
+  \includegraphics[width=\textwidth]{open-project}
+  \caption{Open project}
+  \label{fig:open-project}
+\end{figure}
+You should now have something looking like figure \ref{fig:ide}.
+\begin{figure}
+  \includegraphics[width=\textwidth]{open-ide}
+  \caption{Open IDE}
+  \label{fig:ide}
+\end{figure}
+\clearpage
+\section{C for embedded systems}
+\newthought{Take a moment to examine the program.}\sidenote{reproduced
+  in listing \ref{lst:simple}}
+You should see something familiar to you from your Java experience.
+
+Variable declarations, control flow and other constructs should look
+familiar.  One thing to note is that variable declarations should
+always occur at the beginning of a code block (the thing between
+braces \texttt{\{} \ldots \texttt{\}}), or be global.  The other key
+feature that applies to embedded systems is that \emph{the program
+  does not exit!} (see line 17 in listing \ref{lst:simple}).
+
+\subsection{The Build process}
+The process of building and running your code is simple, with several steps:
+\paragraph{Build the program (figure \ref{fig:build}).}  The IDE includes a clever tool that
+builds the target program.  By monitoring \emph{which} files in the
+project have changed, it can work out what in just-enough to do, to
+rebuild the program.  You'll see that it performs several steps on the
+first build, and less on subsequent builds.
+  \begin{figure}
+    \flushright
+    \includegraphics[width=\textwidth]{build}
+    \caption{Build project}
+    \label{fig:build}
+  \end{figure}
+\begin{tcolorbox}[colframe=red!50!black]
+Watch the ``Build Output'' window at the bottom of the IDE for progress.
+\end{tcolorbox}
+\clearpage
+\paragraph{Download code to flash memory (figure \ref{fig:load}).}  Once build (if successful)
+the program cannot be run yet.  It is still in the PC (as a file on
+the disk)\sidenote{It cannot be run from here.  It is built for the
+  instruction set of the ARM processor, not the instruction set of the
+  PC (AMD x86 instruction set)}.   It has to be downloaded into the
+Flash memory of the LPC4088.
+  \begin{figure}
+    \flushright
+    \includegraphics[width=\textwidth]{load}
+    \caption{Load into embedded system's flash memory}
+    \label{fig:load}
+  \end{figure}
+Once loaded into the memory the program can be run.
+
+\begin{exercise}{Run the code}{run}
+  The simplest (but unexciting) way of running the code is to press
+  the reset button.  Found just above the USB connector.
+
+  \includegraphics{reset-button}
+
+  What can you see happening as a result of the program running?
+\end{exercise}
+
+\clearpage
+\section{The Debugger}
+\paragraph{To see what is happening in the program you need the
+  monitor/debugger.}  Start the debugging session (figure
+\ref{fig:debug}) using the icon in the IDE
+\begin{figure}
+  \flushright
+  \includegraphics[width=\textwidth]{start-debug}
+  \caption{Start debugging session}
+  \label{fig:debug}
+\end{figure}
+Once the debugger session starts you will have a window something like
+figure \ref{fig:the-debugger}.
+\begin{figure}
+  \includegraphics[width=\textwidth]{debug-window}
+  \caption{The Debugger}
+  \label{fig:the-debugger}
+\end{figure}
+The debugger allows you to 
+\begin{itemize}
+\item examine the values of variables
+\item control execution of the code
+  \begin{itemize}
+  \item step line-by-line through the program
+  \item set breakpoints, points where the program will be halted for
+    inspection
+  \end{itemize}
+\item examine CPU registers
+\item examine memory content
+\end{itemize}
+
+\subsection{Watching variables}
+In the program listing if you hover the mouse over a
+variable, a tool-tip shown its current value.
+\newthought{If you have critical variables in the code} you can have a
+permanent view in the \emph{watch} list.
+If you \emph{Right click on a variable,} and from the menu you can add
+the variable to a watch list (figure \ref{fig:add-watch})
+\begin{figure}
+  \flushright
+  \includegraphics[width=\textwidth]{add-watch}
+  \caption{add to watch list}
+  \label{fig:add-watch}
+\end{figure}
+
+\begin{exercise}{Add variables to the watch list}{addwatch}
+  Add the variables \texttt{a}, \texttt{b}, \texttt{f}, and \texttt{n}
+  to the watch list.
+\end{exercise}
+
+The watch list should look something like figure \ref{fig:watch}
+\begin{figure}
+  \flushright
+  \includegraphics[width=\textwidth]{watch-list}
+  \caption{Watch list}
+  \label{fig:watch}
+\end{figure}
+\begin{tcolorbox}[colframe=red!50!black]
+As you step through the program you will see the variables highlighted
+when their value changes
+\end{tcolorbox}
+
+\subsection{Controlling execution}
+\newthought{The debugger has several ways to control the execution of
+  the program under inspection.}  This allows for a fine level of
+control, to examine the operation of the code in detail.  
+
+\paragraph{Single stepping the code.}  Executes one line of the
+program code at a time (figure \ref{fig:step})
+\begin{figure}
+  \includegraphics[width=\textwidth]{step}
+  \caption{Single step}
+  \label{fig:step}
+\end{figure}
+\begin{exercise}{Step through the code}{stepping}
+  Step through the code, watching how the program flow works and
+  watching the values of the variables change as you do.
+\end{exercise}
+
+\paragraph{Run to cursor.}  Put the cursor on a specific line, and the
+``run to cursor'' (figure \ref{fig:runcursor}) will run the program
+until it reaches the line containing the cursor.
+\begin{figure}
+  \includegraphics{run-to-cursor}
+  \caption{Run to cursor}
+  \label{fig:runcursor}
+\end{figure}
+
+\clearpage
+\paragraph{Reset}  The reset function resets the program to its starting
+point.
+\begin{figure}
+  \includegraphics{reset}
+  \caption{Reset }
+  \label{fig:reset}
+\end{figure}
+\subsection{Breakpoints}
+\newthought{Breakpoints are a valuable tool.}  A break point is a
+predefined point in the program where execution is halted.
+\paragraph{To set a breakpoint} click the mouse pointer in the left
+margin, by the line you want the breakpoint at (figure
+\ref{fig:set-break}).  A red circle indicates the presence of a breakpoint.
+\begin{figure}
+  \includegraphics[width=\textwidth]{set-breakpoint}
+  \caption{Setting a breakpoint}
+  \label{fig:set-break}
+\end{figure}
+With breakpoints set you can run the code (figure \ref{fig:run}) and
+it will run then stop at the breakpoint.
+\begin{figure}
+  \includegraphics{run}
+  \caption{run program}
+  \label{fig:run}
+\end{figure}
+\begin{tcolorbox}[colframe=red!50!black]
+In more complex programs, a breakpoint can be a useful diagnostic in
+itself.  If a breakpoint is never triggered, you know that the program
+\emph{never} reaches that point.  
+\end{tcolorbox}
+
+\section{Debugging exercise}
+There is a \emph{broken} program at
+\url{https://github.com/dr-alun-moon/debuggingEx} 
+take a copy of this and see if you can find the programming errors.
+
+\appendix
+\begin{listing}
+  \inputminted[linenos]{c}{embeddedC/src/main.c}
+  \caption{Simple embedded C program}
+  \label{lst:simple}
+\end{listing}
+
+%\bibliographystyle{plainnat}
+%\bibliography{}
+\end{document}
+\begin{minted}[frame=leftline,framerule=1mm,rulecolor=\color{code}]{C}
+	LPC_IOCON->P1_18 = 0;  /* D */
+	LPC_GPIO1->DIR |= led1pin;
+	LPC_GPIO1->SET = led1pin;
+\end{minted}
+
+% min systick 
+% 8ns ~ 
+% peripheral clock 60MHz => 16ns (8ns half-life of K meson
+
+%% Local Variables:
+%% mode: reftex
+%% mode: auto-fill
+%% mode: flyspell
+%% End:
