@@ -5,6 +5,9 @@
 
 \usepackage{minted,tikz,tcolorbox,calc,siunitx}
 \usepackage{tikz-timing}
+\usetikztiminglibrary{either}
+\usetikztiminglibrary{counters}
+\usetikztiminglibrary{beamer}
 \usetikzlibrary{chains,positioning,shapes.geometric,shapes.symbols,calc,shadows}
 \usetikzlibrary{circuits.ee.IEC,arrows}
 \usepackage{pgfplots}
@@ -15,14 +18,14 @@
 \subtitle{CM0506 -- Small Embedded Systems}
 \date{Lecture 3}
 \author{Dr Alun Moon}
-\institute{Department of Computer and Information Science}
+\institute[CIS]{Department of Computer and Information Science}
 
 \definecolor{NUblue}{RGB}{62,141,165}
 \definecolor{NUbluedark}{RGB}{40,119,143}
 
-\usetheme{CambridgeUS}
-
-\usecolortheme{crane}
+\usetheme[secheader]{Boadilla}
+%\usetheme{CambridgeUS}
+%\usecolortheme{crane}
 \setbeamercolor*{palette primary}{use=structure,fg=white,bg=NUblue}
 \setbeamercolor*{palette quaternary}{fg=white,bg=NUbluedark}
 \setbeamercolor{section in head/foot}{fg=white,bg=NUbluedark}
@@ -126,36 +129,39 @@ Typical hardware specifications include:
   \end{table}
 \end{frame}
 
-\begin{frame}[fragile]
-\def\degr#1{\makebox[2em][r]{#1}\ensuremath{{}^{\circ }}}%
-\begin{tikztimingtable}[%
-  timing/dslope=0.1,timing/.style={x=2ex,y=2ex},x=2ex,
-  timing/rowdist=3ex,
-  timing/name/.style={font=\sffamily\scriptsize},
-  timing/nodes/advanced,
-]
-  Clock \degr{90} & l 2{C} N(A1) 5{C} \\
-  Clock \degr{180}& C 2{C} N(A2) 4{C} c\\
-  Clock \degr{270}& h 3{C} N(A3) 4{C} \\
-  Clock \degr{0}  & [C] 2{C} N(A0) 2{C} N(A4) 3{C}c ;[ dotted ]
-                    2L; 2{C} N(A5) 3{C} \\
-  Start of T$_{\text{sw }}$ & 4S G N( start ) \\
-  Input Pulse & 2.0 L 2H 3.5L ;[ dotted ] 2L; 5L \\
-  Set 3 & 2.5 L 2H 3.0 L ;[ dotted ] 2L; 5L \\
-  Set 2 & 3.0 L 2H 2.5 L ;[ dotted ] 2L; 5L \\
-  Set 1 & 3.5 L 2H 2.0 L ;[ dotted ] 2L; 5L \\
-  Set 0 & 4.0 L 2H 1.5 L ;[ dotted ] 2L; 5L \\
-  Reset & 7.5 L ;[ dotted ] 2L; 2L N( reset ) 2H 1L \\
-  Final Pulse & 2.5 L N(B1) e N(B2) e N(B3) e 3.5H; [ dotted ]
-      2H; 2H 3L \\
-  Counter & N(x) 2D{ Full } N(B0) 2D {0} N(B4) 2D{1} 1.5 D;[ dotted ]
-  .25 D {2} 1.75 D {};
-  2D{~ D$_\text{M}$} N(B5) 2D{ D$_\text{M}$ +1} D N(y )\\
-  \extracode
-  %\ tablegrid
-  \node[anchor=north] at ($ (x) ! .5 ! (y) - (0 ,.75) $)
-    {\scriptsize D$_\text{M}$ = MSBs of Duty Cycle };
-  \end{tikztimingtable}%
+\begin{frame}[fragile]{I$^2$C bus}
+  A communications bus using 2-wires 
+  \begin{description}
+  \item[SCL] clock signal
+  \item[SDA] data signal
+  \end{description}
+
+  \begin{tikztimingtable}[xscale=1.5,
+    timing/dslope=0.25,timing/lslope=0.25,
+    timing/new counter={char=B}]
+    SDA & H[dotted];LL8{2B}LlH;H[dotted] \\
+    SCL & H[dotted];hH8{LH}LlHh;H[dotted] \\
+    \extracode
+    \begin{background}
+    \uncover<2>{
+      \foreach \b in {0,...,7} \fill[blue!25] (\b *2+3.75,1.5) rectangle +(.75,-4);
+      \fill[green!25] (1.25,1.4) rectangle +(1.25,-4);
+      \fill[red!25] (20.75,1.4) rectangle +(0.75,-4);
+    }
+    \end{background}
+  \end{tikztimingtable}
+
+  The state of the bus is given by the following conditions
+  \begin{tabular}{lrr}\toprule
+    State & SCL & SDA \\ \midrule
+    Start condition & H & L \\
+    Data valid & H & bit \\
+    Start condition & H & H \\
+  \end{tabular}
+\end{frame}
+
+\begin{frame}{SPI}
+  different
 \end{frame}
 %%%% --------
 \end{document}
