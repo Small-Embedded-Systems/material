@@ -1,5 +1,8 @@
 ## emacs backup files
 *~
+## Mac oddities
+.DS_Store
+
 ## Core latex/pdflatex auxiliary files:
 *.aux
 *.lof

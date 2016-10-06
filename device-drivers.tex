@@ -1,0 +1,165 @@
+%% -*- mode: latex; mode:flyspell -*-
+\documentclass[svgnames,x11names]{beamer}
+
+\usepackage[british]{babel}
+
+\usepackage{minted,tikz,tcolorbox,calc,siunitx}
+\usepackage{tikz-timing}
+\usetikzlibrary{chains,positioning,shapes.geometric,shapes.symbols,calc,shadows}
+\usetikzlibrary{circuits.ee.IEC,arrows}
+\usepackage{pgfplots}
+\usepackage{booktabs,inconsolata}
+
+
+\title{The Device Driver}
+\subtitle{CM0506 -- Small Embedded Systems}
+\date{Lecture 3}
+\author{Dr Alun Moon}
+\institute{Department of Computer and Information Science}
+
+\definecolor{NUblue}{RGB}{62,141,165}
+\definecolor{NUbluedark}{RGB}{40,119,143}
+
+\usetheme{CambridgeUS}
+
+\usecolortheme{crane}
+\setbeamercolor*{palette primary}{use=structure,fg=white,bg=NUblue}
+\setbeamercolor*{palette quaternary}{fg=white,bg=NUbluedark}
+\setbeamercolor{section in head/foot}{fg=white,bg=NUbluedark}
+\setbeamercolor{subsection in head/foot}{fg=white,bg=NUblue}
+\setbeamercolor{frametitle}{fg=NUbluedark!150,bg=NUblue!40}
+\setbeamercolor{title in head/foot}{fg=white,bg=NUblue}
+\setbeamercolor{author in head/foot}{fg=white, bg=NUbluedark}
+\setbeamercolor{date in head/foot}{fg=white, bg=NUblue!60}
+\setbeamercolor{title}{fg=NUbluedark!150,bg=NUblue!30}
+\setbeamercolor{date}{fg=NUbluedark!150}
+\setbeamercolor{block title}{fg=white,bg=NUblue}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+
+\begin{document}
+
+\frame\maketitle
+
+\begin{frame}{Interpretation of Hardware Specifications}
+Typical hardware specifications include:
+\begin{itemize}
+\item Functional description
+\item Pinout specifications
+\item Operating voltages (Minimum, maximum, and typical)
+\item Timing Diagrams
+\item Protocol Diagrams
+\item Critical timing data
+\end{itemize}
+\end{frame}
+
+\begin{frame}{What is a \alert{device driver}?}
+  \begin{itemize}
+  \item A collection of software routines to perform I/O functions
+  \item Interface software, called by the operating system or
+    application code, to configure devices and perform I/O
+  \item Software to \emph{glue} the hardware and software together
+  \item Separates policy from mechanism
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{A Device Driver}
+  \begin{itemize}
+  \item Encapsulates the behaviour of a device
+  \item Allows application developers to ignore low-level detail
+  \item A consistent interface to a device or family of devices
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Device Driver code}
+  \begin{itemize}
+  \item Notoriously difficult to design and debug
+  \item May be complex
+  \item Requires a deep understanding of the hardware
+  \item Low-level code -- sometimes requires assembly language
+  \item API (Application Programming Interface) requires careful design
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Portability}
+  \begin{itemize}
+  \item Device drivers provide a layer of abstraction to hardware I/O devices
+  \item Higher levels of software can access devices in a uniform
+    hardware-independent manner
+  \item If designed well, device driver software can be ported.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Developing Device Drivers}
+  \begin{itemize}
+  \item Read the hardware specification
+  \item Re-read the specification, review in a group
+  \item Specify an API and review this
+  \item Design and develop code to provide the API and consistent with
+    hardware specifications
+  \item Test the API carefully -- use instumentation, and simple,
+    incremental, text harness software.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Typical Driver Functions}
+  \begin{itemize}
+  \item Configure a device -- initialise the hardware to a known state
+  \item Turn a device on or off
+  \item Assign interrupt handlers
+  \item Read data from a device
+  \item Write data to a device
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Timing diagrams}
+  \begin{table}
+    \begin{tabular}{rl}\toprule
+      Interrupt 0      & \texttiming{L2{G12L}GL} \\
+      LED              & \texttiming{L{12H12L}H} \\ \midrule
+      Interrupt 1      & \texttiming{L4{G6L}GL} \\
+      LED              & \texttiming{L2{6H6L}H} \\ \bottomrule
+    \end{tabular}
+    \caption{Timing diagram for two LEDs}
+    \label{tab:twoleds}
+  \end{table}
+\end{frame}
+
+\begin{frame}[fragile]
+\def\degr#1{\makebox[2em][r]{#1}\ensuremath{{}^{\circ }}}%
+\begin{tikztimingtable}[%
+  timing/dslope=0.1,timing/.style={x=2ex,y=2ex},x=2ex,
+  timing/rowdist=3ex,
+  timing/name/.style={font=\sffamily\scriptsize},
+  timing/nodes/advanced,
+]
+  Clock \degr{90} & l 2{C} N(A1) 5{C} \\
+  Clock \degr{180}& C 2{C} N(A2) 4{C} c\\
+  Clock \degr{270}& h 3{C} N(A3) 4{C} \\
+  Clock \degr{0}  & [C] 2{C} N(A0) 2{C} N(A4) 3{C}c ;[ dotted ]
+                    2L; 2{C} N(A5) 3{C} \\
+  Start of T$_{\text{sw }}$ & 4S G N( start ) \\
+  Input Pulse & 2.0 L 2H 3.5L ;[ dotted ] 2L; 5L \\
+  Set 3 & 2.5 L 2H 3.0 L ;[ dotted ] 2L; 5L \\
+  Set 2 & 3.0 L 2H 2.5 L ;[ dotted ] 2L; 5L \\
+  Set 1 & 3.5 L 2H 2.0 L ;[ dotted ] 2L; 5L \\
+  Set 0 & 4.0 L 2H 1.5 L ;[ dotted ] 2L; 5L \\
+  Reset & 7.5 L ;[ dotted ] 2L; 2L N( reset ) 2H 1L \\
+  Final Pulse & 2.5 L N(B1) e N(B2) e N(B3) e 3.5H; [ dotted ]
+      2H; 2H 3L \\
+  Counter & N(x) 2D{ Full } N(B0) 2D {0} N(B4) 2D{1} 1.5 D;[ dotted ]
+  .25 D {2} 1.75 D {};
+  2D{~ D$_\text{M}$} N(B5) 2D{ D$_\text{M}$ +1} D N(y )\\
+  \extracode
+  %\ tablegrid
+  \node[anchor=north] at ($ (x) ! .5 ! (y) - (0 ,.75) $)
+    {\scriptsize D$_\text{M}$ = MSBs of Duty Cycle };
+  \end{tikztimingtable}%
+\end{frame}
+%%%% --------
+\end{document}
+%% Local Variables:
+%% mode: reftex
+%% mode: auto-fill
+%% mode: flyspell
