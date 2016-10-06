@@ -79,6 +79,7 @@ header \path{led.h}.
 $ git clone https://github.com/dr-alun-moon/timers
 $ cd timers
 $ git checkout ex.1.1
+$
 \end{minted}
     Examine the files for the LED driver \path{led.h} and
     \path{led.c}.
@@ -166,9 +167,9 @@ required values, some are changed for different uses.
 \begin{minted}[frame=leftline,framerule=1mm,rulecolor=\color{code}]{C}
 LPC_SC->PCONP |= (1UL << 1);
 LPC_TIM0->TCR = 0;
-LPC_TIM0->PR = 0;
+LPC_TIM0->PR = 59999;
 LPC_TIM0->CTCR = 0;
-LPC_TIM0->MR0 = PeripheralClock / tickHz - 1;
+LPC_TIM0->MR0 = period_ms - 1;
 LPC_TIM0->MCR = 0x03UL;
 timer0UserDefinedHandler = handler;
 LPC_TIM0->IR = 0x3F;
@@ -193,12 +194,14 @@ on and off.  Disabling the timer while configuring it is important for
 correct behaviour to occur.
 
 \begin{minted}[frame=leftline,framerule=1mm,rulecolor=\color{code}]{C}
-LPC_TIM0->PR = 0;
+LPC_TIM0->PR = 59999;
 \end{minted}
 The prescale register \citep[24.6.4]{lpc4088} controls the rate at
 which the Timer ticks.  The Timer counts one tick for each (PR+1)
-ticks of the peripheral clock.  Setting a 0 here makes the Timer tick
-at the same rate (\SI{60}{\mega\hertz}) as the Peripheral clock.
+ticks of the peripheral clock (\SI{60}{\mega\hertz}).  Setting the
+value to 59999 makes the timer count for every 60000 ticks of the
+Peripheral clock, or $60000\times\SI{60}{\mega\hertz} =
+\SI{1}{\milli\second}$. 
 
 \begin{minted}[frame=leftline,framerule=1mm,rulecolor=\color{code}]{C}
 LPC_TIM0->CTCR = 0;
@@ -208,13 +211,13 @@ system is used as a clock (Peripheral Clock) or a counter.  By setting
 it to 0 we are using the device as a counter.
 
 \begin{minted}[frame=leftline,framerule=1mm,rulecolor=\color{code}]{C}
-LPC_TIM0->MR0 = PeripheralClock / tickHz - 1;
+LPC_TIM0->MR0 = period_ms - 1;
 \end{minted}
 Match Register 0, is one of the 4 Match Registers for the timer
 \citep[24.6.7]{lpc4088}.  An interrupt occurs every (MR+1) ticks of
-the Timer.  The expression here calculates the right value using the
-known \texttt{PeripheralClock} rate and the desired rate.  This works
-if the prescale register is 0.
+the Timer.  Since we have make the clock tick once every
+\SI{1}{\milli\second}, we just need the period in \si{\milli\second}
+minus 1.
 
 \begin{minted}[frame=leftline,framerule=1mm,rulecolor=\color{code}]{C}
 LPC_TIM0->MCR = 0x03UL;
