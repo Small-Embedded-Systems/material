@@ -1,0 +1,162 @@
+%% -*- latex -*-
+\documentclass[a4paper]{tufte-handout}
+
+\usepackage[british]{babel}
+\usepackage{booktabs}
+\usepackage{tikz}
+\usepackage{tikz-timing}
+\usepackage{minted}
+\usepackage{graphicx}
+\usepackage{natbib}
+\usepackage{siunitx}
+\usepackage[theorems,skins]{tcolorbox}
+\tcbset{enhanced}
+\newtcbtheorem{exercise}{Exercise}{drop fuzzy shadow}{ex}
+\newtcbtheorem{question}{Question}{drop fuzzy shadow}{q}
+
+\title{LPC4088 Button Device Driver\\\small{CM0506 Small Embedded Systems}}
+\author{Dr Alun Moon}
+\date{Seminar 5b}
+\definecolor{code}{wave}{602}
+%\definecolor{cmd}{wave}{528}
+\definecolor{cmd}{named}{SkyBlue}
+
+\begin{document}
+\maketitle
+
+\section{Button Device Driver}
+\newthought{If we take the user board button\sidenote{The one on the
+    red PCB}} by itself,  the task of designing an API becomes fairly
+simple.  We need to be able to initialise the hardware to have the
+button as an input, and we need to be able to read the button state.
+
+\paragraph{The API definitions in the header file} will look something
+like.
+\begin{minted}[frame=leftline,framerule=1mm,rulecolor=\color{code}]{C}
+void button_init(void);
+int button_pressed(void);
+\end{minted}
+With only one button, the API is simply a case of configuring the GPIO
+port for input on the appropriate pin, and reading the state of the
+pin.
+
+\section{Internals}
+\newthought{The internals of the driver merit some examination and
+  discussion.}  There are a number of features that the processor has
+around the port that are worth looking at in detail as they can make
+life easier for the programmer.
+\subsection{Initialisation}
+\paragraph{For the most part the initialisation of the port is
+  familiar.}  The pin is put into its GPIO mode and set for input.
+\begin{minted}[frame=leftline,framerule=1mm,rulecolor=\color{code}]{C}
+void button_init(void){
+  LPC_IOCON->P2_10 = PULLUP|INVERT; /* use pullup resistor and signal inversion */
+  LPC_GPIO2->DIR &= ~buttonpin; /* input - clear direction bit */
+}
+\end{minted}
+\newthought{The IOCON register is worth examining, its value is no longer 0.}
+
+The User manual \citep{lpc4088} lists the behaviour of the IOCON
+register in Chapter 7.  The button is connected to Port-2 pin-10,
+table 79 on page 127 lists this as a type D pin.  Tables 83 and 84
+describe this in more detail.
+
+\paragraph{Bits 3:4 are described as MODE bits,} controlling an internal
+resistor.  Without going into the details of the electronics.  This
+can be set to no resistor (00) or a pull-up resistor (10).  Setting
+this as a pull-up resistor ensures that a high value is read if the
+input is not connected to another signal.\sidenote{We can get away
+  with no resistor, but I prefer to use the pull-up resistor as it is
+  available and ensures a \emph{High} or \emph{Low} signal.}
+ 
+
+\paragraph{Bit 6 controls an inverter \citep[7.3.4]{lpc4088}.}
+Setting this bit turns the inversion on.  A signal level of \emph{Low}
+on the pin now reads as a logic 1, and a \emph{High} signal now reads
+as 0.   This is useful here as the bit now reflects the state of the
+button, \emph{pushed}(1), or \emph{not-pushed}(0).
+ 
+\newthought{By setting the ICON register to \texttt{PULLUP|INVERT}.}
+We are guaranteed a 0 or 1, with 1 being the button pressed.
+
+\subsection{Reading the button state}
+Reading the button state is now a simple matter of testing bit-10 in
+port-2.
+\begin{minted}[frame=leftline,framerule=1mm,rulecolor=\color{code}]{C}
+int button_pressed(void){
+  int state = 0;
+  LPC_GPIO2->MASK = ~buttonpin;
+  state = LPC_GPIO2->PIN;
+  LPC_GPIO2->MASK = nil;
+  return state;
+}
+\end{minted}
+\newthought{The built-in MASK register} performs a similar action to
+the masking operations we have already seen in code.  Its operation is
+subtly different.
+\paragraph{A value of 1} marks the bit as not to update the value of
+the PIN register on read \citep[8.5.1.2]{lpc4088}.
+
+For convenience I read the line
+as
+\begin{minted}[frame=leftline,framerule=1mm,rulecolor=\color{code}]{C}
+  LPC_GPIO2->MASK = ~buttonpin;
+\end{minted}
+\begin{quote}
+  Mask (\emph{hide}) \textbf{not} the button pin.
+\end{quote}
+When we then read the value of the PIN register, we will get 0s
+everywhere \emph{except} for the value of bit-10, which reflects the
+state of the button.
+\paragraph{Since C treats 0 as false, non-zero as true} and we have a
+value of 0 or 1024 ($2^{10}$), then we can just return this
+value\sidenote{you could test this and return true/false as required,
+  or shift the bits down 10 places to give 0 or 1}.
+
+\section{Interrupts}
+\newthought{The User Button is connected to Port-2, which can generate
+  interrupts.}  We can add to the API to initialise and configure an
+interrupt handler for the button.
+
+\subsection{Rising and Falling edge triggers}
+Section 8.2.2 of the manual, says that the port can generate
+interrupts on rising and falling edges.  A rising-edge is where the
+value goes from 0-to-1, and a falling-edge where the value goes from
+1-to-0. 
+
+These values are taken from the PIN register, so after the effects of
+the inverter on the pin.  So given the configuration of IOCON we have
+used, we get
+\begin{table}
+  \begin{tabular}{ll}
+    Button changes from \emph{not}-pushed to pushed&rising edge\\
+    Button changes from pushed to \emph{not}-pushed&falling edge\\
+  \end{tabular}
+  \caption{Button interrupts}
+  \label{tab:buttonedges}
+\end{table}
+
+\subsection{Initialisation}
+There is one interrupt generated for GPIO registers, IRQ 38.  The
+interrupt controller has two registers, one for disabling the
+interrupt and one for enabling the interrupt.  Because the number of
+interrupts is greater than 32, CMSIS defines an array, which is why
+the code for enable/disable looks a little odd.  IRQ 38 is bit 6 in
+interrupt register 1.
+
+To select the rising or falling edge to trigger the interrupt, we set
+the appropriate bit (10) in the Port interrupt control registers.
+
+
+\bibliographystyle{plainnat}
+\bibliography{lpc4088}
+
+\appendix
+
+\end{document}
+
+%% Local Variables:
+%% mode: reftex
+%% mode: auto-fill
+%% mode: flyspell
+%% End:
