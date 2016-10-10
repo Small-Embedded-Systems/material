@@ -16,7 +16,7 @@
 
 \title{The Device Driver}
 \subtitle{CM0506 -- Small Embedded Systems}
-\date{Lecture 3}
+\date{Lecture 4}
 \author{Dr Alun Moon}
 \institute[CIS]{Department of Computer and Information Science}
 
@@ -40,6 +40,8 @@
 
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
+
+\definecolor{code}{wave}{528}
 
 \begin{document}
 
@@ -116,6 +118,176 @@ Typical hardware specifications include:
   \end{itemize}
 \end{frame}
 
+\begin{frame}{API design}
+  A good API should
+  \begin{itemize}
+  \item have clearly named functions and values
+  \item do what is expected (principle of least surprise)
+  \item hide unimportant implementation details
+  \item follow conventional patterns, if appropriate (eg. \texttt{putc()})
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Case study}{LED driver}
+  \begin{description}
+  \item[function] configure and switch LEDs on and off
+  \item[hardware] the LEDs are connected to a variety of pins and
+    ports, with differing circuits 
+    \begin{itemize}
+    \item different LEDs require different logic values to turn on
+    \end{itemize}
+  \item[encapsulation] API should isolate hardware dependencies
+  \item[uniformity] API should treat all LEDs consistently 
+  \end{description}
+\end{frame}
+
+\begin{frame}{LED Driver}{Published API}
+  The API is ``published'' through the header file (\path{led.h}) that
+  programs \texttt{\#include} to access the functions.
+  \begin{enumerate}
+  \item Provide labels (symbols) for LEDs
+    \begin{itemize}
+    \item Physical names matching PCB and Schematics
+    \item Logical names, better descriptive names or functional names
+    \end{itemize}
+  \item Access LEDs via functions with symbolic names as arguments
+  \item Functions to:-
+    \begin{itemize}
+    \item initialise IO to drive LEDs
+    \item turn LEDs on and off
+    \item interrogate LED state
+    \item toggle state of LED
+    \end{itemize}
+
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}[fragile]{LED Driver}{\path{led.h}}
+\begin{minted}[bgcolor=blue!10]{c}
+enum LED {
+	/* PCB names */
+	LED1, LED2, LED3, LED4,
+	/* logical names */
+	left_green=LED1, right_green,
+	left_blue,	right_blue,
+};
+\end{minted}
+
+\alert{Enumerated Types} are useful here
+\begin{itemize}
+\item Automatically provide (arbitrary/independent) values
+\item Provide a type against which to check values and parameters
+\item Compiler has extra support for \texttt{switch} (more later)
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}[fragile]{LED Driver}{\path{led.h}}
+\begin{minted}[bgcolor=blue!10]{c}
+void led_init(void);
+
+void led_on    (enum LED name);
+void led_off   (enum LED name);
+void led_toggle(enum LED name);
+
+int  led_state (enum LED name);
+\end{minted}
+
+\alert{Function prototypes} declare available functions that make up the
+  API
+\begin{itemize}
+\item \emph{Note} the use of enumerated types as parameters
+\item Compiler can check that one of the symbolic values is passed, or
+  value is defined in the enumeration
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{LED Driver}{Implementation extract}
+  \begin{minted}[bgcolor=blue!10]{c}
+enum ledmasks {
+	nil,
+	led1pin=(1UL << 18), /* port 1 */
+	led2pin=(1UL << 13), /* port 0 */
+	led3pin=(1UL << 13), /* port 1 */
+	led4pin=(1UL << 19), /* port 2 */
+};
+\end{minted}
+
+Internal values for convenience in writing code
+\begin{itemize}
+\item bit masks
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{LED Driver}{Implementation extract}
+  \begin{minted}[bgcolor=blue!10]{c}
+void led_on    (enum LED name){
+  switch(name) {
+    case LED1:
+      LPC_GPIO1->CLR = led1pin;
+      break;
+    case LED2:
+\end{minted}
+
+Switch statement to select action based on symbolic name
+\begin{itemize}
+\item Compiler can test to see if all cases are covered.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{LED Driver}{Implementation extract}
+  \begin{minted}[bgcolor=blue!10]{c}
+case LED1:
+  LPC_GPIO1->MASK = ~led1pin; /* mask (hide) not the led pin */
+  LPC_GPIO1->PIN ^= led1pin;
+  LPC_GPIO1->MASK = nil;      /* don't mask (hide) anything  */
+  break;
+\end{minted}
+
+\begin{itemize}
+\item Make use of hardware features to make code simple
+\item may make code faster (less operations in software) 
+  \begin{itemize}
+  \item but measure \alert{don't} assume
+  \end{itemize}
+\end{itemize}
+\end{frame}
+                    
+\begin{frame}[fragile]{LED Driver}{Implementation extract}
+  \begin{minted}[bgcolor=blue!10]{c}
+int  led_state (enum LED name)
+{
+  int state = 0;
+\end{minted}
+\begin{itemize}
+\item local variables with default values
+\end{itemize}
+\begin{minted}[bgcolor=blue!10]{c}
+      LPC_GPIO1->MASK = ~led1pin;
+      state = LPC_GPIO1->PIN;
+      LPC_GPIO1->MASK = nil;
+\end{minted}
+\begin{itemize}
+\item set to values where known
+\end{itemize}
+\begin{minted}[bgcolor=blue!10]{c}
+  return state;
+}  
+  \end{minted}
+  \begin{itemize}
+  \item C convention (ANSI C89)
+    \begin{itemize}
+    \item return logic values as \texttt{int}
+    \item zero false, non-zero true
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+
+
+%%%% --------
+\end{document}
+
 \begin{frame}{Timing diagrams}
   \begin{table}
     \begin{tabular}{rl}\toprule
@@ -163,8 +335,7 @@ Typical hardware specifications include:
 \begin{frame}{SPI}
   different
 \end{frame}
-%%%% --------
-\end{document}
+
 %% Local Variables:
 %% mode: reftex
 %% mode: auto-fill
