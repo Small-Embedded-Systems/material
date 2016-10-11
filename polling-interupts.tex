@@ -1,0 +1,153 @@
+%% -*- mode: latex; mode:flyspell -*-
+\documentclass[svgnames,x11names]{beamer}
+
+\usepackage[british]{babel}
+
+\usepackage{minted,tikz,tcolorbox,calc,siunitx}
+\usetikzlibrary{chains,positioning,calc,shadows,arrows,matrix}
+\usetikzlibrary{shapes.geometric,shapes.symbols}
+\usetikzlibrary{circuits,circuits.logic,circuits.logic.IEC}
+
+\usepackage{pgfplots}
+\usepackage{booktabs,inconsolata}
+
+\usepackage{tikz-timing}
+\usetikztiminglibrary{either}
+\usetikztiminglibrary{counters}
+\usetikztiminglibrary{beamer}
+
+\title{Polling vs Interrupts}
+\subtitle{CM0506 -- Small Embedded Systems}
+\date{Lecture 5}
+\author{Dr Alun Moon}
+\institute{Department of Computer and Information Science}
+
+\definecolor{NUblue}{RGB}{62,141,165}
+\definecolor{NUbluedark}{RGB}{40,119,143}
+
+\usetheme{CambridgeUS}
+
+\usecolortheme{crane}
+\setbeamercolor*{palette primary}{use=structure,fg=white,bg=NUblue}
+\setbeamercolor*{palette quaternary}{fg=white,bg=NUbluedark}
+\setbeamercolor{section in head/foot}{fg=white,bg=NUbluedark}
+\setbeamercolor{subsection in head/foot}{fg=white,bg=NUblue}
+\setbeamercolor{frametitle}{fg=NUbluedark!150,bg=NUblue!40}
+\setbeamercolor{title in head/foot}{fg=white,bg=NUblue}
+\setbeamercolor{author in head/foot}{fg=white, bg=NUbluedark}
+\setbeamercolor{date in head/foot}{fg=white, bg=NUblue!60}
+\setbeamercolor{title}{fg=NUbluedark!150,bg=NUblue!30}
+\setbeamercolor{date}{fg=NUbluedark!150}
+\setbeamercolor{block title}{fg=white,bg=NUblue}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+
+\begin{document}
+
+\frame\maketitle
+
+\begin{frame}[fragile]{Polling}{Periodically checking devices}
+  \begin{block}{}
+    \begin{minted}{c}
+      while(1) {
+        wait(200);
+        if (buttonPressedAndReleased(&pin[JLEFT])) {
+          flashing[LED1] = !flashing[LED1];
+        }
+        if (buttonPressedAndReleased(&pin[JDOWN])) {
+          flashing[LED2] = !flashing[LED2];
+        }
+      }
+    \end{minted}
+  \end{block}
+  \begin{itemize}
+  \item Check for condition of device
+  \item if data is available
+  \item read the device or do something
+  \item repeat
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Polling}
+  \begin{block}{}
+    \begin{minted}{c}
+      bool buttonPressedAndReleased(gpioPin_t *pin) {
+	bool result = false;
+	if (gpioPinVal(pin) == 0) {
+		while (gpioPinVal(pin) == 0) {
+			/* skip */
+		}
+		result = true;
+	}
+	return result;
+      }
+    \end{minted}
+  \end{block}
+  \begin{itemize}
+  \item Software has to keep checking status of device
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Polling}
+  \begin{tikzpicture}[xscale=0.5]
+    \foreach \x in {1,...,25}
+      \draw (\x,-0.25) -- (\x,1.25);
+      \draw[red,thick] (0,0) -- (4.5,0) -- (4.5,1) -- (6.75,1) -- (6.75,0) --
+       (10,0) -- (14,1) -- (15.5,1) -- (21.5,0) -- (25,0);
+  \end{tikzpicture}
+  \begin{description}
+  \item[Level sensitive] Test value of input at sample points 
+    \begin{itemize}
+    \item what is 1 or 0
+    \end{itemize}
+  \item[Edge sensitive] Test for changes in level
+    \begin{description}
+    \item[Rising Edge] level goes from low (0) to high (1)
+    \item[Falling Edge] level goes from high (1) to low (0)
+    \end{description}
+  \end{description}
+  \begin{alertblock}{}
+    What happens if the signal changes between sample points?
+  \end{alertblock}
+\end{frame}
+
+\begin{frame}{Polling}
+  \begin{itemize}
+  \item Also called \alert{Synchronous} I/O
+  \item For many applications:  most polled samples will mean ``nothing happening here''
+  \item Considerable time may be spent executing code for long
+    intervals when no input is available to work on 
+  \item This may be OK if there is nothing else to do \ldots but \ldots
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Polling more than one input}
+  \begin{itemize}[<+->]
+  \item What if there are many inputs which have to be sampled?
+  \item The application will have to scan each input and react if the
+    input is active (interesting)
+  \item Manageable under some circumstances
+  \item It may become difficult if the number of inputs is large and
+    other tasks require processing.
+  \item System may be slow to react to inputs
+    \begin{itemize}
+    \item you have to wait until the next sample for that input
+    \end{itemize}
+
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Interrupts}
+  \begin{itemize}
+  \item A peripheral device may be connected 
+  \end{itemize}
+\end{frame}
+
+%%%% --------
+\end{document}
+%% Local Variables:
+%% mode: reftex
+%% mode: auto-fill
+%% mode: flyspell
+%% End:

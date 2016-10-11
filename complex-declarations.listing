@@ -1,0 +1,6 @@
+    int data[100];
+    int *residuals;
+
+    residuals = variance(data);
+    residuals[4];
+  

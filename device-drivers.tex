@@ -263,9 +263,9 @@ int  led_state (enum LED name)
 \item local variables with default values
 \end{itemize}
 \begin{minted}[bgcolor=blue!10]{c}
-      LPC_GPIO1->MASK = ~led1pin;
-      state = LPC_GPIO1->PIN;
-      LPC_GPIO1->MASK = nil;
+  LPC_GPIO1->MASK = ~led1pin;
+  state = LPC_GPIO1->PIN;
+  LPC_GPIO1->MASK = nil;
 \end{minted}
 \begin{itemize}
 \item set to values where known
@@ -283,7 +283,13 @@ int  led_state (enum LED name)
   \end{itemize}
 \end{frame}
 
-
+\begin{frame}[fragile]{Buttons}
+  \begin{block}{}
+    \begin{minted}[bgcolor=blue!20]{c}
+      #define <stdio.h>
+    \end{minted}
+  \end{block}
+\end{frame}
 
 %%%% --------
 \end{document}
@@ -340,3 +346,4 @@ int  led_state (enum LED name)
 %% mode: reftex
 %% mode: auto-fill
 %% mode: flyspell
+%% End:

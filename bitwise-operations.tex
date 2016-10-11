@@ -192,14 +192,14 @@ Exclusive Or & \multicolumn{2}{c}{$a\oplus b$}\\\bottomrule
 
 \begin{frame}[fragile]{C Operators}{Bitwise logic operators}
   \begin{description}
-  \item[And] \mint{c}{a & b} 
+  \item[And] ~ \makebox[34ex][r]{\mintinline{c}{a & b}} \linebreak 
     \begin{tabular}{cccccccc}
       0&0&0&1&0&1&1&0 \\
       1&0&0&1&1&0&0&1 \\\midrule
       0&0&0&1&0&0&0&0
     \end{tabular}\\[2em]
 
-  \item[Or] \mint{c}{a | b} 
+  \item[Or] ~ \makebox[34ex][r]{\mintinline{c}{a | b}} \linebreak
     \begin{tabular}{cccccccc}
       0&0&0&1&0&1&1&0 \\
       1&0&0&1&1&0&0&1 \\\midrule
@@ -241,9 +241,17 @@ Often a \alert{bitmask} is a pattern of zeros and ones marking a bit-of-interest
     \end{bytefield}}
 
 \item in C this can be created using \alert{shift} operators
-  \mint[bgcolor=blue!20]{c}{(1<<5)}
+  \begin{minipage}{0.8\linewidth}
+    \begin{block}{}
+      \mint{c}{(1<<5)}
+    \end{block}
+  \end{minipage}
 \item Usually given a name describing the bit it corresponds to
-  \mint[bgcolor=blue!20]{c}{enum { led=(1<<5) };}
+  \begin{minipage}{0.8\linewidth}
+    \begin{block}{}
+      \mint{c}{enum { led=(1<<5) };}
+    \end{block}
+  \end{minipage}
   \end{itemize}
 \end{example}
 \end{frame}
@@ -252,8 +260,17 @@ Often a \alert{bitmask} is a pattern of zeros and ones marking a bit-of-interest
   \begin{itemize}
   \item use the \alert{or} identities $a \wedge 1 = 1$ and $a \wedge 0 = a$
   \item Or the register with the mask, writing the result back into the register
-    \mint[bgcolor=blue!20]{c}{ dir = dir | led;}  or
-    \mint[bgcolor=blue!20]{c}{ dir |= led; }
+    \begin{minipage}{0.8\linewidth}
+      \begin{block}{}
+        \mint{c}{ dir = dir | led;}
+      \end{block}
+    \end{minipage}\\
+  or\\
+  \begin{minipage}{0.8\linewidth}
+    \begin{block}{}
+      \mint{c}{ dir |= led; }
+    \end{block}
+  \end{minipage}
   \end{itemize}
 
   \begin{example}
@@ -279,8 +296,17 @@ Often a \alert{bitmask} is a pattern of zeros and ones marking a bit-of-interest
   \begin{itemize}
   \item use the \alert{and} identities $ a \vee 0 = 0$ and $a \vee 1 = a$
   \item Here we use \alert{and} with \alert{not}
-    \mint[bgcolor=blue!20]{c}{ dir = dir & ~but;}  or
-    \mint[bgcolor=blue!20]{c}{ dir &= ~but; }
+    \begin{minipage}{0.8\linewidth}
+      \begin{block}{}
+        \mint{c}{ dir = dir & ~but;}
+      \end{block}
+    \end{minipage}\\
+ or\\
+ \begin{minipage}{0.8\linewidth}
+   \begin{block}{}
+     \mint{c}{ dir &= ~but; }
+   \end{block}
+ \end{minipage}
   \end{itemize}
 
   \begin{example}
@@ -293,7 +319,11 @@ Often a \alert{bitmask} is a pattern of zeros and ones marking a bit-of-interest
         \end{bytefield}
       }
     \item Applying a mask defined as
-      \mint[bgcolor=blue!20]{c}{enum { but=(1<<6) };}
+      \begin{minipage}{0.8\linewidth}
+        \begin{block}{}
+          \mint{c}{enum { but=(1<<6) };}
+        \end{block}
+      \end{minipage}
     \item gives \raisebox{-1ex}{
         \begin{bytefield}[endianness=big]{8}
           \bitboxes*{1}{10100011}
@@ -307,8 +337,17 @@ Often a \alert{bitmask} is a pattern of zeros and ones marking a bit-of-interest
   \begin{itemize}
   \item use the \alert{exclusive or} identities $ a \oplus 1 = \neg a$ and $a \oplus 0 = a$
   \item Here we use \alert{xor}
-    \mint[bgcolor=blue!20]{c}{ dir = dir ^ func;}  or
-    \mint[bgcolor=blue!20]{c}{ dir ^= func; }
+    \begin{minipage}{0.8\linewidth}
+      \begin{block}{}
+        \mint{c}{ dir = dir ^ func;}
+      \end{block}
+    \end{minipage}\\
+  or\\
+  \begin{minipage}{0.8\linewidth}
+    \begin{block}{}
+      \mint{c}{ dir ^= func; }
+    \end{block}
+  \end{minipage}
   \end{itemize}
 
   \begin{example}
@@ -321,7 +360,11 @@ Often a \alert{bitmask} is a pattern of zeros and ones marking a bit-of-interest
         \end{bytefield}
       }
     \item Applying a mask defined as
-      \mint[bgcolor=blue!20]{c}{enum { func=(3<<1) };}
+      \begin{minipage}{0.8\linewidth}
+        \begin{block}{}
+          \mint{c}{enum { func=(3<<1) };}
+        \end{block}
+      \end{minipage}
     \item gives \raisebox{-1ex}{
         \begin{bytefield}[endianness=big]{8}
           \bitboxes*{1}{101100101}
@@ -336,7 +379,11 @@ Often a \alert{bitmask} is a pattern of zeros and ones marking a bit-of-interest
   \begin{itemize}
   \item use the properties of \alert{and} with the behaviour of C
   \item \alert{and} the \alert{mask} with the register
-    \mint[bgcolor=blue!20]{c}{ pin & but; }
+    \begin{minipage}{0.8\linewidth}
+      \begin{block}{}
+        \mint{c}{ pin & but; }
+      \end{block}
+    \end{minipage}
   \item if the result is
     \begin{itemize}
     \item 0 the bit is 0
@@ -357,19 +404,31 @@ Often a \alert{bitmask} is a pattern of zeros and ones marking a bit-of-interest
         \end{bytefield}
       }
     \item and a mask defined as
-      \mint[bgcolor=blue!20]{c}{enum { but=(1<<6) };}
-
-    \item  \mint[bgcolor=blue!20]{c}{pin & but}  gives \raisebox{-1ex}{
+      \begin{minipage}{0.8\linewidth}
+        \begin{block}{}
+          \mint{c}{enum { but=(1<<6) };}
+        \end{block}
+      \end{minipage}
+      \begin{minipage}{0.8\linewidth}
+        \begin{block}{}
+          \mint{c}{pin & but}
+        \end{block}
+      \end{minipage}
+\item      gives \raisebox{-1ex}{
         \begin{bytefield}[endianness=big]{8}
           \bitboxes*{1}{00000000}
         \end{bytefield}
       }
     \item C tests this as false
-      \begin{minted}[bgcolor=blue!20]{c}
+      \begin{minipage}{0.8\linewidth}
+        \begin{block}{}
+\begin{minted}{c}
         if( pin & but) {
           button = pressed;
         }
-      \end{minted}
+\end{minted}
+        \end{block}
+      \end{minipage}
     \end{itemize}
   \end{example}
 \end{frame}
@@ -385,19 +444,33 @@ Often a \alert{bitmask} is a pattern of zeros and ones marking a bit-of-interest
         \end{bytefield}
       }
     \item and a mask defined as
-      \mint[bgcolor=blue!20]{c}{enum { but=(1<<6) };}
+      \begin{minipage}{0.8\linewidth}
+        \begin{block}{}
+          \mint{c}{enum { but=(1<<6) };}
+        \end{block}
+      \end{minipage}
 
-    \item  \mint[bgcolor=blue!20]{c}{pin & but}  gives \raisebox{-1ex}{
+      \begin{minipage}{0.8\linewidth}
+        \begin{block}{}
+          \mint{c}{pin & but}
+        \end{block}
+      \end{minipage}
+\item
+      gives \raisebox{-1ex}{
         \begin{bytefield}[endianness=big]{8}
           \bitboxes*{1}{01000000}
         \end{bytefield}
       }
     \item C tests this as true ($2^6=64$)
-      \begin{minted}[bgcolor=blue!20]{c}
+      \begin{minipage}{0.8\linewidth}
+        \begin{block}{}
+\begin{minted}{c}
         if( pin & but) {
           button = open;
         }
-      \end{minted}
+\end{minted}
+        \end{block}
+      \end{minipage}
     \end{itemize}
   \end{example}
 \end{frame}
@@ -410,3 +483,4 @@ Often a \alert{bitmask} is a pattern of zeros and ones marking a bit-of-interest
 %% mode: reftex
 %% mode: auto-fill
 %% mode: flyspell
+%% End:
