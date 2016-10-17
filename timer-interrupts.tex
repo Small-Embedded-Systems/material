@@ -30,10 +30,25 @@ handle events, along-side a \emph{main-loop} handling polling and time
 consuming actions.
 
 Note: \emph{No Operating System}
-
-\clearpage
+\begin{tcolorbox}[colframe=SkyBlue,title=GitHub]
+  The repository on GitHub has several branches illustrating different
+  aspects of timers.
+  
+  To get the repository
+  \begin{minted}[frame=leftline,framerule=1mm,rulecolor=\color{cmd}]{bash}
+$ git clone https://github.com/dr-alun-moon/timers
+$ cd timers
+\end{minted}
+Then checkout each example.\\
+\begin{tabular}{ll}
+  \texttt{single-timer} & A single timer flashing a single LED\\
+  \texttt{dual-timers} & Two timers at different rates for two LEDs\\
+  \texttt{duty-cycle} &  LED with a short on and longer off\\
+  \texttt{multiple-timers} & Complex flashing pattern \\
+\end{tabular}
+\end{tcolorbox}
 \section{Timers and Interrupts}
-\newthought{Attention can now be turned to the Timers and
+\newthought{Attention can  be turned to the Timers and
   corresponding interrupts.}  These can be used to trigger periodic
 events in some fashion.  The LPC4088 has four timers, each of which
 operate in the same way.  See pages
@@ -162,20 +177,21 @@ Example 1.2 just flashes one LED in a simple fashion.
 \begin{minted}[frame=leftline,framerule=1mm,rulecolor=\color{cmd}]{bash}
 $ git clone https://github.com/dr-alun-moon/timers
 $ cd timers
-$ git checkout ex.1.2
+$ git checkout single-timer
 \end{minted}
 \begin{exercise}{Add a second LED}{two-led}
   Add code to use a second timer (Timer-1) to flash a second LED at a
   different rate.
 
-  If you use a multiple of the rate on Timer-0, it is easier to check
-  the operation is as you'd expect.
+  Take care copying the code for TIMER0, it is easy to miss an
+  occurance of a 0 that needs changing to a 1.
 \begin{tcolorbox}[colframe=red!50!black,title=Solution]
 A solution is in Git 
 \begin{minted}[frame=leftline,framerule=1mm,rulecolor=\color{cmd}]{bash}
-$ git checkout s.1.2
+$ git checkout dual-timers
 \end{minted}
-\end{tcolorbox}\end{exercise}
+\end{tcolorbox}
+\end{exercise}
 
 A possible timing diagram is shown in table \ref{tab:twoleds},
 assuming the LED state is toggled in each ISR.
@@ -189,6 +205,19 @@ assuming the LED state is toggled in each ISR.
 \caption{Timing diagram for two LEDs}
 \label{tab:twoleds}
 \end{table}
+
+\vspace{1in}
+\begin{tcolorbox}[colframe=red!75!black,title=Question?]
+  The code for TIMER0 and TIMER1 is very nearly
+  identical (They should be the timer hardware on the silicon
+    is identical.)
+
+Is there an easy way to parameterise the function so that we could
+have something like.
+\begin{minted}{c}
+  init_timer(0, rate, period, handler);
+\end{minted}
+\end{tcolorbox}
 
 \clearpage
 \section{Multiple Interrupts}
@@ -222,7 +251,7 @@ one LED on a 20\% duty cycle.
 \begin{minted}[frame=leftline,framerule=1mm,rulecolor=\color{cmd}]{bash}
 $ git clone https://github.com/dr-alun-moon/timers
 $ cd timers
-$ git checkout ex.1.3
+$ git checkout duty-cycle
 \end{minted}
 Examine \path{main.c}, \path{timer.c}, and \path{timer.h} to check how
 the changes have been made.
@@ -231,12 +260,7 @@ the changes have been made.
 \item Add similar changes to enable a second match register on Timer-1
 \item Flash another LED with an 80\% duty cycle
 \end{enumerate}
-\begin{tcolorbox}[colframe=red!50!black,title=Solution]
-A solution is in Git 
-\begin{minted}[frame=leftline,framerule=1mm,rulecolor=\color{cmd}]{bash}
-$ git checkout s.1.3
-\end{minted}
-\end{tcolorbox}
+
 \end{exercise}
 
 \begin{question}{}{}
@@ -249,6 +273,8 @@ $ git checkout s.1.3
 
 \begin{question}{}{}
   How could you stop timer-0 after 4 flashes?
+
+  \emph{hint} take a look at the \texttt{multiple-timers} branch.
 \end{question}
 
 \bibliographystyle{plainnat}
@@ -384,12 +410,14 @@ When it reaches the value in one of the match registers, the timer
 reacts acording to the values in the match control register.
 
 So the relevent relations are shown in table \ref{tab:timer}.
-A simple scheme is to set the prescaler to 0 (divide by 1).
-The period of the timer, the value to use in the match register is
-given by (\texttt{tickHz} is the rate wanted for the timer interrupt).
-\begin{minted}{C}
- PeripheralClock / tickHz - 1 
-\end{minted}
+A simple scheme is to set the prescaler to 59999 (divide by 60000).
+This makes the Timer clock tick at a \SI{1}{\milli\second} rate.  
+The value written into the match register is just the period in 
+\si{\milli\second} minus 1.
+
+Alternatively the prescale value can be just 59, which makes the timer
+tick every \SI{1}{\micro\second}
+
 \begin{table}
   \begin{tabular}{lll}
     Peripheral Clock rate & $f_P$ & \SI{60}{\mega\hertz} \\
@@ -401,6 +429,7 @@ given by (\texttt{tickHz} is the rate wanted for the timer interrupt).
   \caption{Timer relationships}
   \label{tab:timer}
 \end{table}
+
 \label{sec:timer-behavior-end}
 The highest rate the timer can run at is one interrupt every tick of
 the Peripheral Clock \SI{60}{\mega\hertz} or once every

@@ -113,6 +113,7 @@ value of 0 or 1024 ($2^{10}$), then we can just return this
 value\sidenote{you could test this and return true/false as required,
   or shift the bits down 10 places to give 0 or 1}.
 
+\clearpage
 \section{Interrupts}
 \newthought{The User Button is connected to Port-2, which can generate
   interrupts.}  We can add to the API to initialise and configure an
@@ -147,7 +148,41 @@ interrupt register 1.
 To select the rising or falling edge to trigger the interrupt, we set
 the appropriate bit (10) in the Port interrupt control registers.
 
+\begin{minted}[frame=leftline,framerule=1mm,rulecolor=\color{code}]{C}
+NVIC->ICER[1] = (1UL<<(GPIO_IRQn-32)); /* disable interrupt */
 
+LPC_GPIOINT->IO2IntEnR = buttonpin;    /*  rising edge triggers interrupt */
+LPC_GPIOINT->IO2IntEnF = buttonpin;    /* falling edge triggers interrupt */
+	
+NVIC->ISER[1] = (1UL<<(GPIO_IRQn-32)); /* enable interrupt */
+\end{minted}
+
+In the interrupt handler \mintinline{c}{GPIO_IRQHandler} we can look
+at the status registers for rising and falling edges to identify the
+cause of the interrupt.
+
+\paragraph{In the initialisation} of the interrupt handler we pass in
+a pointer to a function for the custom code for the application.  If
+this function takes the appropriate \mintinline{c}{enum} type (see the
+header file), we can pass the type of edge to this when called from
+the interrupt handler.
+\begin{minted}[frame=leftline,framerule=1mm,rulecolor=\color{code}]{C}
+if( LPC_GPIOINT->IO2IntStatR ) button_event(Risingedge);
+if( LPC_GPIOINT->IO2IntStatF ) button_event(Fallingedge);
+\end{minted}
+where
+\begin{minted}[frame=leftline,framerule=1mm,rulecolor=\color{code}]{C}
+static void (*button_event)(enum edge_t);
+\end{minted}
+
+\section{5-way joystick button switch}
+The Experiment Base Board, as a 5-way button switch.  This is
+connected to port-5\sidenote{If you read the User
+  Manual\citep{lpc4088} you will see that port-5 only has 5 pins
+  exposed.}
+
+\subsection{Design choice}
+In designing the API for the 5-way switch you have 
 \bibliographystyle{plainnat}
 \bibliography{lpc4088}
 
