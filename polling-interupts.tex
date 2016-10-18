@@ -140,8 +140,131 @@
 
 \begin{frame}{Interrupts}
   \begin{itemize}
-  \item A peripheral device may be connected 
+  \item A peripheral device may be connected to the CPU by an
+    \alert{Interrupt request} line
+    \begin{itemize}
+    \item Identified by a number
+    \item May by \emph{on chip} devices, timers, communications
+    \item May be \emph{external} IO ports, dedicated interrupt pins
+    \end{itemize}
+  \item The \alert{Interrupt vector table} has a corresponding list of
+    addresses for interrupt handler routines
+    \begin{itemize}
+    \item an array of addresses
+    \end{itemize}
   \end{itemize}
+
+  \begin{block}{Actions on an interrupt}
+    \begin{enumerate}
+    \item CPU finishes current instruction (machine level/assembler)
+    \item saves a snapshot of its state
+    \item looks up the address of the interrupt handler in the vector
+      table
+    \item branches to this address
+    \item on exiting the interrupt handler, restores the saved state
+    \end{enumerate}
+  \end{block}
+\end{frame}
+
+\begin{frame}{Interrupts}
+  \begin{itemize}
+  \item \alert{Asynchronous} deviation of execution path
+  \item can occur between \emph{any two} machine instructions
+  \item beware side effects of interrupt handler.
+  \end{itemize}
+
+  \begin{block}{Interrupt Latency}
+  \begin{itemize}
+  \item The Delay between the event occuring and the execution of the
+    corresponding handler
+  \item Many factors can influence:
+    \begin{itemize}
+    \item Completion of current instruction
+    \item Fetch of interrupt vector
+    \item Completion of any higher priority interrupts
+    \end{itemize}
+  \end{itemize}
+\end{block}
+\end{frame}
+\begin{frame}
+  \frametitle{Interrupts and Complexity}
+  \begin{itemize}
+  \item Interrupt based solutions can be \alert{very} difficult to
+    debug
+  \item Hard to demonstrate correctness
+  \item Interrupts can interfere in unexpected ways -- especially if
+    shared resources are involved
+  \end{itemize}
+\end{frame}
+\part{Code structure and hints}
+\frame\partpage
+
+\begin{frame}{Interrupt handler}
+  \begin{itemize}
+  \item \alert{No} parameters passed or returned
+  \item need to use \alert{globals} to pass information between
+    interrupts and other parts of code
+  \item Usually some hardware related \emph{boiler-plate} code to
+    manage flags.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Split hardware interrupt related and
+    application related}
+  \begin{exampleblock}{}
+\begin{minted}{c}
+void (*timer0_handler)(uint32_t match);
+void TIMER0_IRQHandler(void)
+{
+	timer0_handler(LPC_TIM0->IR);
+	LPC_TIM0->IR |= (1UL << 0);
+}
+
+\end{minted}
+  \end{exampleblock}
+  \begin{exampleblock}{}
+\begin{minted}{c}
+void flash(void)
+{
+	toggle_led(left_blue);
+}
+int main()
+{
+	initialise_timer0(ms,1000,flash)
+}
+\end{minted}
+  \end{exampleblock}
+  
+\end{frame}
+
+\begin{frame}
+  \frametitle{Advantages}
+  \begin{itemize}
+  \item Separated interrupt specific code from application code
+  \item Easy and hard bits to write and test
+  \item Keeps application logic together in same file.
+  \item Scope rules help avoid unwanted interactions
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}[fragile]
+  \begin{block}{scoping rules}
+\begin{minted}{c}
+static int flashing;
+void flash(void)
+{
+	if( flashing ) toggle_led(left_blue);
+}
+int main()
+{
+	if( button_pressed() )
+		flashing = 1;
+	else
+		flashing = 0;
+}
+\end{minted}
+  \end{block}
 \end{frame}
 
 %%%% --------
