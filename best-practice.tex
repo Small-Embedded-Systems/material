@@ -1,0 +1,427 @@
+%% -*- latex -*-
+\documentclass{beamer}
+\usepackage[british]{babel}
+\usepackage{minted,inconsolata,tikz}
+%\usepackage[svgnames]{xcolor}
+
+\title{CM506 -- Small Embedded Systems}
+\subtitle{Best Practice, Style and Code Conformance}
+\author{Dr Alun Moon}
+\institute[CSDT]{Department of Computer Science and Digital Technology}
+\date{Lecture 6}
+
+\definecolor{NUblue}{RGB}{62,141,165}
+\definecolor{NUbluedark}{RGB}{40,119,143}
+
+\usetheme{CambridgeUS}
+
+\usecolortheme{crane}
+\setbeamercolor*{palette primary}{use=structure,fg=white,bg=NUblue}
+\setbeamercolor*{palette quaternary}{fg=white,bg=NUbluedark}
+\setbeamercolor{section in head/foot}{fg=white,bg=NUbluedark}
+\setbeamercolor{subsection in head/foot}{fg=white,bg=NUblue}
+\setbeamercolor{frametitle}{fg=NUbluedark!150,bg=NUblue!40}
+\setbeamercolor{title in head/foot}{fg=white,bg=NUblue}
+\setbeamercolor{author in head/foot}{fg=white, bg=NUbluedark}
+\setbeamercolor{date in head/foot}{fg=white, bg=NUblue!60}
+\setbeamercolor{title}{fg=NUbluedark!150,bg=NUblue!30}
+\setbeamercolor{date}{fg=NUbluedark!150}
+\setbeamercolor{block title}{fg=white,bg=NUblue}
+\logo{\vspace*{-0.3cm}{\includegraphics[width=2cm]{NU_logo_blue}}}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+
+\begin{document}
+\frame\maketitle
+
+
+\begin{frame}{Best Practice}
+  \begin{itemize}
+  \item The adoption of procedures, tools and techniques to
+    ensure quality in the final product
+  \item Sound engineering practice
+  \item Accepted methods
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Issues}
+  \begin{description}
+  \item[Complete specification] you may need to go back and ask questions
+  \item[Management of complexity] Good partioning and decomposition
+  \item[Design quality]
+  \item[Modelling]
+  \item[Record keeping]  version control
+  \item[Software quality]  attention to detail
+  \item[Testing rigour]
+  \end{description}
+\end{frame}
+
+\begin{frame}{Cost}
+  \begin{itemize}
+  \item Cost of product recall as a result of product defects
+    can be massive
+  \item Automobile faults require expensive recall
+  \item Even modest systems (e.g., controllers for white goods)
+    require that sufficient care has been adopted in their development
+    such that they are safe to use, are reliable, are not too
+    expensive to run or repair, etc….
+  \end{itemize}
+\end{frame}
+
+% \begin{frame}{Good Practice}
+%   \begin{itemize}
+%   \item Quality in implementation and testing
+%   \item General issues
+%     \begin{itemize}
+%     \item Reinvention, time dependencies, control structure,
+%       error detection and testing, design and design tools,
+%       optimisation, portability, configuration and global variables
+%     \end{itemize}
+%   \item Language issues
+%     \begin{itemize}
+%     \item C, safe language subsets, conformance and style
+%       checkers
+%     \end{itemize}
+%   \item Working culture
+%   \end{itemize}
+% \end{frame}
+
+% \begin{frame}{Some good sources}
+%   \begin{itemize}
+%   \item Safer C: Developing software for high-integrity and
+%     safety-critical systems, L Hatton, McGrawHill, 1994
+%   \item C Traps and Pitfalls, A Koenig, Addison Wesley, 1988
+%   \item Writing Solid Code, S Maguire, Microsoft Press, 1993
+%   \item Code Complete: A practical handbook of software construction,
+%     S McConnell, Microsoft Press, 1993
+%   \end{itemize}
+% \end{frame}
+
+% \begin{frame}{Quality in Implementation}
+%   \begin{itemize}
+%   \item Was the design correctly translated into C?
+%   \item Is the software properly constructed in a modular fashion?
+%   \item Is the software written in accordance with a standard such as
+%     MISRA-C?
+%   \item Is the software source written to a standard style guide?
+%   \item Is the software free of any unintended recursion?
+%   \end{itemize}
+% \end{frame}
+
+\begin{frame}{Quality in Implementation}
+  \begin{itemize}
+  \item Is the software designed to be easy to test?
+%  \item Is the compiler fit for the purpose?
+  \item Is the software properly constructed in a modular fashion?
+  \item Have the compiler switches and non-ISO C extensions been
+    properly used?
+  \item Has the target CPU been used properly or to best advantage
+    \begin{itemize}
+    \item Configuration of target
+    \item Clock speed?
+    \item Errata sheets - silicon bugs
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Quality in Testing}
+  \begin{itemize}
+    \item Do you have a good test plan?
+  \item Are testing tools capable enough or sufficiently
+    accurate?
+  \item Have timing aspects been considered in test schema?
+  \item Has all code been tested under normal and abnormal conditions
+    with no bugs discovered
+  \item Have all failed tests been explained and corrected
+    \begin{itemize}
+    \item Have all tests been performed whilst running on the
+      target hardware?
+    \end{itemize}
+  \item Have any differences between the hardware used for testing and
+    the final hardware been allowed for?
+  \item Have tests been performed using the final memory map?
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Quality in Testing}
+  \begin{itemize}
+%  \item Have all tests been performed on exactly the same
+%    software as will be shipped?
+%  \item Have all required modifications been incorporated into the
+%    released version?
+
+  \item Has all the source code been statically analysed?
+  \item Has the complexity of the code been assessed?
+  \item Have interrupts been considered?
+  \item Are interrupt run times been considered?
+  \item Are interrupt latencies within acceptable limits?
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Do not reinvent}
+  \begin{itemize}
+  \item Look for similar problems
+  \item Use templates - design patterns
+  \item Learn from experience
+  \item Focus on similarities not differences
+  \item Take care using code not designed for reuse
+  \item Is your code designed for reuse?  A personal library?
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Time dependencies}
+\begin{itemize}
+\item Do not build these into software
+\item Do not implement delays as empty loops
+\item Use operating system system clocks
+\item Use timers with polling or interrupts
+  \begin{alertblock}{do not use}
+\begin{minted}{c}
+    for ( i= 0; i < 1000 ; i++ ) ;
+\end{minted}
+  \end{alertblock}
+  \begin{exampleblock}{good practice}
+\begin{minted}{c}
+    initialiseCounter( 1000 );
+    waitForTimeout();
+\end{minted}
+  \end{exampleblock}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Structure}
+\begin{itemize}
+\item Don’t use large if..then..else structures
+\item Use Boolean algebra,
+\item Use lookup tables
+\item Redesign as state-machine
+
+\item Do not use large switch statements
+%\item Do not assume that switch is simpler than if..then..else
+%\item Same clauses at if..then..else
+\item State machine gives switch structure
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Recursion}
+  \begin{itemize}
+  \item Recursion is a powerful design paradigm
+  \item Many algorithms can be implemented elegantly using recursion
+  \item Recursion can cause stack overflow!
+  \item Can be very difficult to follow processing chain in recursive
+    algorithms
+  \item Many recursive algorithms can be replaced by iteration
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}{Error detection and Testing}
+\begin{itemize}
+\item Testing
+\begin{itemize}
+\item Prepare proper test schemas
+\item Avoid interactive testing
+\item Prepare complete test beds
+\item Test complete applications in addition to isolated
+components
+\end{itemize}
+\item Run-time error detection
+\begin{itemize}
+\item Design error detection and handling into your design
+\item Do not add error handling as an after thought
+\item Do not discover error detection requirements through
+testing
+\end{itemize}
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Design}
+  \begin{itemize}
+  \item Do not over design
+  \item Include nothing useless
+
+  \item Co-design software and hardware
+  \item Some functions can more easily be implemented in hardware
+  \item Software can be engineered to make hardware requirements
+    simpler
+  \item Consider alternative solutions
+  \item The best solution is unlikely to be the first
+  \item Present your designs to others
+
+  \item Use a design method
+  \item But understand its semantics and notation and syntax
+  \end{itemize}
+\end{frame}
+
+% \begin{frame}{Design Tools}
+% \begin{itemize}
+% \item Do not choose on the basis pf market fashion
+% \begin{itemize}
+% \item Evaluate technical needs
+% \item Do not believe what vendors say
+% \end{itemize}
+% \item Do not document after implementation
+% \item Use documentation interactively and iteratively as
+%  part of the design process
+% \begin{itemize}
+% \item Understand the different roles of documentation
+% \item Elicitation
+% \item Specification
+% \item Detailed design
+% \item Maintenance navigation
+% \end{itemize}
+% \end{itemize}
+% \end{frame}
+
+% \begin{frame}{Analysis}
+%   \begin{itemize}
+%   \item Do scheduling analysis
+%     \begin{itemize}
+%     \item Include device drivers in analysis
+%     \item Include interrupts in analysis
+%     \end{itemize}
+%   \item Do memory analysis
+%   \item Also stack usage
+
+%   \item Use modelling whenever possible
+%   \item Better than testing
+%   \item Promotes early design
+
+%   \item Use formal methods if appropriate
+%   \item Encourages rigour
+%   \end{itemize}
+% \end{frame}
+
+\begin{frame}{Optimisation}
+\begin{itemize}
+\item A focus on optimisation can confuse design
+\item Use selective optimisation
+\item Profilers are useful tools
+\item Call graphs
+\item Localise hot spots
+\item Be aware of your target hardware and compilers
+\item \emph{Measure} don't guess
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Portability}
+\begin{itemize}
+\item Different architectures confound porting
+\item Localise design and implementation volatility
+\item Encapsulate all non standard features
+\item Separate machine dependent and machine dependent code
+\item Do not over generalise everything
+\item Take care using code not designed for reuse
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Program Configuration}
+\begin{itemize}
+\item Avoid \#defines for configuration
+\item The use of pragmas should be minimised, localised and
+  encapsulated to dedicated functions
+\item Use data files as the preferred method for configuration
+\item Change control and multiple versions are easier
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Globals}
+  \begin{itemize}
+  \item Minimise the use of global variables
+  \item Global variables are shared…
+  \item Thread violations
+  \item Increases functional coupling
+  \item Data inconsistency
+  \item Causes inter-module dependencies
+  \item Limits replication of modules
+  \end{itemize}
+\end{frame}
+
+% \begin{frame}{Global Variables}
+%   \begin{itemize}
+%   \item ADT programming
+%     \begin{itemize}
+%     \item Encapsulation
+%     \item Defined interface
+%     \item Use locks and scheduling to access shared data
+%     \end{itemize}
+%   \item If non OO technology is used:
+%   \item Use a struct to encapsulate
+%   \item Pass pointers to structures as args
+%   \item Use initialisation functions
+%   \end{itemize}
+% \end{frame}
+
+\begin{frame}{C}
+  \begin{itemize}
+  \item C has poor run time checking
+  \item Easy to make mistakes with C syntax (= or ==, etc.)
+  \item Widely used for embedded development - a highlevel assembler
+  \item C is very mature - good compilers, known problems.
+  \item C is very portable and compilers generate small code.
+  \item Can use a restricted language (subset) for improved control:
+  \item MISRA is used for automotive applications
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Style conventions}
+  \begin{itemize}
+  \item Names - length, type, etc
+  \item Layout - braces, indent, etc
+  \item Headers - files for prototypes
+  \item Function declaration
+  \item Commenting - how and what depth
+    \begin{itemize}
+    \item Indian Hill
+    \item CodeStyle - Linux kernel style - Linus Torvalds
+    \item GNU
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+%\part{Making Good % Use of The C Programming Language}
+
+% \begin{frame}{C Data Management}
+%   \begin{description}
+%   \item[Type] - char, unsigned int, ...
+%   \item[Identifiers] - used to access data
+%   \item[Values] - the data stored at a location
+%   \item[Scope] - the range of code lines over which the identifier is
+%     recognised
+%   \item[Lifetime] - from creation to destruction - when available for
+%     use
+%   \end{description}
+% \end{frame}
+
+% \begin{frame}{Scope}
+  
+% \end{frame}
+
+% \begin{frame}{Globals}
+%   \begin{itemize}
+%   \item Must be declared outside all functions
+%   \item Functions are inherently global cannot declare a function
+%     inside a function
+%   \item Scope is from the point of declaration to the end of the file
+%   \end{itemize}
+% \end{frame}
+
+% \begin{frame}{Lifetime}
+%   \begin{itemize}
+%   \item Static - Life of entire program execution
+%   \item Automatic - From entry to exit of a function - stored on the
+%     stack during function execution
+%   \item Dynamic - from malloc() to free() stored on the heap
+%   \end{itemize}
+% \end{frame}
+
+\end{document}
+
+%% Local Variables:
+%% mode: flyspell
+%% mode: reftex
+%% mode: buffer-face
+%% End:
