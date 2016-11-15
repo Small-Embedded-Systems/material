@@ -1,0 +1,147 @@
+%% -*- latex -*-
+\documentclass{beamer}
+\usepackage[british]{babel}
+\usepackage{minted,inconsolata,tikz}
+%\usepackage[svgnames]{xcolor}
+
+\title{CM506 -- Small Embedded Systems}
+\subtitle{Debugging}
+\author{Dr Alun Moon}
+\institute[CS]{Department of Computer and Information Science }
+\date{Lecture 7}
+
+\definecolor{NUblue}{RGB}{62,141,165}
+\definecolor{NUbluedark}{RGB}{40,119,143}
+
+\usetheme{CambridgeUS}
+
+\usecolortheme{crane}
+\setbeamercolor*{palette primary}{use=structure,fg=white,bg=NUblue}
+\setbeamercolor*{palette quaternary}{fg=white,bg=NUbluedark}
+\setbeamercolor{section in head/foot}{fg=white,bg=NUbluedark}
+\setbeamercolor{subsection in head/foot}{fg=white,bg=NUblue}
+\setbeamercolor{frametitle}{fg=NUbluedark!150,bg=NUblue!40}
+\setbeamercolor{title in head/foot}{fg=white,bg=NUblue}
+\setbeamercolor{author in head/foot}{fg=white, bg=NUbluedark}
+\setbeamercolor{date in head/foot}{fg=white, bg=NUblue!60}
+\setbeamercolor{title}{fg=NUbluedark!150,bg=NUblue!30}
+\setbeamercolor{date}{fg=NUbluedark!150}
+\setbeamercolor{block title}{fg=white,bg=NUblue}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+
+\begin{document}
+\frame\maketitle
+
+\begin{frame}
+  \begin{quote}
+    when you have eliminated the impossible, whatever remains, however improbable, must be the truth
+\\
+
+\makebox[\textwidth]{ --- Sherlock Holmes}
+  \end{quote}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Why Debugging?}
+  \begin{itemize}
+  \item Once you have a program you can download into the ARM hardware, it has passed through the build process.
+    \begin{itemize}
+    \item it is syntactically correct -- it has compiled
+    \item all variable and function calls are resolved in memory -- it has linked
+    \end{itemize}
+  \item Any further errors occur at runtime.  (The compiler can't help you here)
+  \item Debugging isolates and identifies where the program is erroneous
+    \begin{itemize}
+    \item not doing something it should
+    \item doing something it shouldn't
+    \end{itemize}
+
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Identify the Problem}
+  \begin{itemize}
+  \item What are the symptoms?
+    \begin{itemize}
+    \item stick to what it is (is not) doing
+    \item don't try to guess cause yet
+    \end{itemize}
+  \item What are the related sections of code?
+    \begin{itemize}
+    \item Be comprehensive,  initialisation, input/output, interrupts
+    \item be alert,  the cause may be elsewhere
+    \end{itemize}
+    \item Try not get sucked into one narrative of what is wrong, it
+      closes off other potential sources,  be broad-minded as to
+      causes.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{The Debugger}
+  The Debugger is a valuable tool for examining the actual state of a
+  program on the machine.
+  \begin{itemize}
+  \item variable examination -- what are the actual contents
+  \item variable manipulation -- can change variables contents
+  \item memory and register examination
+  \item code execution -- flow of the program
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Watch lists}
+  \begin{itemize}
+  \item lists of variables to monitor 
+  \item displays their value when the program is halted
+  \item whether the variable is in scope (is visible) for the line of code
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Program Execution}
+  The debugger can control the execution of the program, running and
+  halting the program.
+  \begin{itemize}
+  \item Single step -- executes a line of source code (C or assembly)
+  \item Step into -- steps into a function call
+  \item Step over -- steps over a function as it it was a single
+    statement
+  \item run.
+  \end{itemize}
+\end{frame}
+\begin{frame}
+  \frametitle{Breakpoints}
+  A breakpoint is a predetermined point in the program where the
+  execution halts.
+  \begin{itemize}
+  \item good for stopping before a critical section to step through
+  \item good for stopping at a ``waypoint'' so check state of
+    variables
+  \item good for checking if a line of code is executed -- is the
+    breakpoint hit.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \begin{enumerate}
+  \item Identify the symptoms
+  \item Isolate relevant sections of code
+    \begin{enumerate}
+    \item examine in detail, execution and variables
+    \item be comprehensive (is the interrupt flag cleared)
+    \end{enumerate}
+  \item Step back -- problem might be elsewhere
+  \item Have I covered everything?
+  \end{enumerate}
+\end{frame}
+
+\end{document}
+
+%% Local Variables:
+%% mode: flyspell
+%% mode: reftex
+%% End:

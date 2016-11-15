@@ -1,0 +1,51 @@
+%% -*- latex -*-
+\documentclass{beamer}
+\usepackage[british]{babel}
+\usepackage{minted,inconsolata,tikz}
+%\usepackage[svgnames]{xcolor}
+
+\title{CM506 -- Small Embedded Systems}
+\subtitle{Good practice in code}
+\author{Dr Alun Moon}
+\institute[CS]{Department of Computer and Information Science }
+\date{Lecture 6a}
+
+\definecolor{NUblue}{RGB}{62,141,165}
+\definecolor{NUbluedark}{RGB}{40,119,143}
+
+\usetheme{CambridgeUS}
+
+\usecolortheme{crane}
+\setbeamercolor*{palette primary}{use=structure,fg=white,bg=NUblue}
+\setbeamercolor*{palette quaternary}{fg=white,bg=NUbluedark}
+\setbeamercolor{section in head/foot}{fg=white,bg=NUbluedark}
+\setbeamercolor{subsection in head/foot}{fg=white,bg=NUblue}
+\setbeamercolor{frametitle}{fg=NUbluedark!150,bg=NUblue!40}
+\setbeamercolor{title in head/foot}{fg=white,bg=NUblue}
+\setbeamercolor{author in head/foot}{fg=white, bg=NUbluedark}
+\setbeamercolor{date in head/foot}{fg=white, bg=NUblue!60}
+\setbeamercolor{title}{fg=NUbluedark!150,bg=NUblue!30}
+\setbeamercolor{date}{fg=NUbluedark!150}
+\setbeamercolor{block title}{fg=white,bg=NUblue}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+
+\begin{document}
+\frame\maketitle
+
+\begin{frame}
+  \begin{itemize}
+  \item clean APIs
+  \item isolate hardware dependencies
+  \item separate policy and process
+  \item encapsulation and hiding
+  \end{itemize}
+\end{frame}
+
+\end{document}
+
+%% Local Variables:
+%% mode: flyspell
+%% mode: reftex
+%% End:
