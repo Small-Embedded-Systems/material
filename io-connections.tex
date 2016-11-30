@@ -1,0 +1,88 @@
+%% -*- latex -*-
+\documentclass[12pt]{tufte-handout}
+
+\usepackage[british]{babel}
+\usepackage{booktabs}
+\usepackage{tikz}
+\usetikzlibrary{calc,shapes.geometric} 
+\usepackage{tikz-timing}
+\usepackage{minted}
+\usepackage{graphicx}
+\usepackage{natbib}
+\usepackage{siunitx}
+\usepackage[theorems,skins]{tcolorbox}
+\tcbset{enhanced}
+\newtcbtheorem{exercise}{Exercise}{drop fuzzy shadow}{ex}
+\newtcbtheorem{question}{Question}{drop fuzzy shadow}{q}
+
+\title{LPC4088 IO Connections\\Devices on the Quick Start board and
+  Experiment Base board}
+\author{Dr Alun Moon}
+
+\definecolor{code}{wave}{602}
+%\definecolor{cmd}{wave}{528}
+\definecolor{cmd}{named}{SkyBlue}
+
+\hypersetup{colorlinks, urlcolor = DarkRed}
+
+
+\begin{document}
+\maketitle
+
+\section{LEDs}
+The LPC4088 Quickstart board has 4 LEDs.  The two green LEDs (LED1 and
+LED2) are connected as part of the USB interface, thoough they can be
+used independently via GPIO pins.  The two blue LEDs (LED3 and LED4)
+are connected to GPIO pins.
+
+The Experiment Base board has 11 LEDs.  Three are housed in the same
+package as one component on the board.  These are a \emph{red},
+\emph{green}, and \emph{blue} LED connected to GPIO pins.  These can also
+be driven by PWM outputs from the LPC4088.  
+
+The other 8 LEDs are connected to the outputs of a
+\emph{shift-register} which is connected to the LPC4088 via a SPI bus
+(under SSP in the LPC User manual).
+\begin{table}
+\begin{tabular}{llrrcc}
+  Board & LED & Port & pin & active & pwm \\
+  \midrule[1pt]
+  Quick start & {LED1} (green) & P1 & 18 & low  & n \\
+              & {LED2} (green) & P0 & 13 & low & n \\
+              & {LED3} (blue)  & P1 & 13 & high & n \\
+              & {LED4} (blue)  & P2 & 19 & high & n \\
+ \midrule
+  Experiment  & {LED1 - red}   & P1 & 11 & low & y \\
+              & {LED1 - green} & P1 &  5 & low & y \\
+              & {LED1 - blue}  & P1 &  7 & low & y \\
+ \midrule
+   Experiment & {LED2} -- {LED9} & \multicolumn{4}{c}{Shift
+  Register --- (\emph{see below})} \\ \bottomrule
+\end{tabular}
+\caption{{led} connections}
+\label{tab:led-connections}
+\end{table}
+\subsection{Shift register}
+Eight  of the {LED}s on the Experiment Base Board are connected
+to the outputs of a shift register.  The shift register itself is
+connected to the SPI bus as follows:
+\begin{table}
+\begin{tabular}{lrr}
+  SPI & Port & pin \\ \midrule
+  MOSI & P1 & 24 \\
+  SCK & P1 & 20 \\
+  SSEL & P1 & 2 \\ \bottomrule
+\end{tabular}
+\caption{Shift register SPI bus connections}
+\label{tab:spishiftregister}
+\end{table}
+\bibliography{lpc4088}
+\bibliographystyle{plainnat}
+\end{document}
+
+%% Local Variables:
+%% mode: reftex
+%% mode: auto-fill
+%% mode: flyspell
+%% mode: tabkey2
+%% End:

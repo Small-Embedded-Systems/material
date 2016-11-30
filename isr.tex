@@ -1,0 +1,101 @@
+%% -*- latex -*-
+\documentclass[12pt]{tufte-handout}
+
+\usepackage[british]{babel}
+\usepackage{booktabs}
+\usepackage{tikz}
+\usepackage{tikz-timing}
+\usepackage{minted}
+\usepackage{graphicx}
+\usepackage{natbib}
+\usepackage{siunitx}
+\usepackage[theorems,skins]{tcolorbox}
+\tcbset{enhanced}
+\newtcbtheorem{exercise}{Exercise}{drop fuzzy shadow}{ex}
+\newtcbtheorem{question}{Question}{drop fuzzy shadow}{q}
+
+\title{Interrupt Service Routines\\\small{CM0506 Small Embedded Systems}}
+\author{Dr Alun Moon}
+
+\definecolor{code}{wave}{602}
+%\definecolor{cmd}{wave}{528}
+\definecolor{cmd}{named}{SkyBlue}
+
+
+\begin{document}
+\maketitle
+\section{Interrupt Service Routines (ISR)}
+{Interrupt Service Routines (ISR) are unlike normal
+  functions.}  Normal functions have an entry-point that is called by
+other functions (with parameters), and an exit-point that returns
+control (and a value) to the calling routine.  The point in a program
+where a function is called is known and predicable.
+An ISR by its nature departs from these patterns.
+\newthought{An ISR:}
+\begin{itemize}
+\item Takes no parameters passed into it.
+\item Returns no values
+\item Can occur at any (random) time -- is \emph{asynchronous}
+\end{itemize}
+The prototype, as seen in a header file for an ISR is:-
+\begin{minted}[frame=leftline,framerule=1mm,rulecolor=\color{code}]{c}
+void someISR(void);
+\end{minted}
+\subsection{Code size}
+An ISR can occur at any time, and most likely happens between critical
+operations\sidenote{For example between the \emph{increment} and \emph{test} of a
+  \texttt{for} loop}, there is a need to keep the time the ISR takes
+to execute to a minimum.
+\newthought{In event driven systems,} most of the behaviour can occur
+in interrupts.  While the execution time may not be as so constrained,
+care must be taken that the execution-time of the ISR is known in
+relation to the time available for it to execute.
+
+If the ISR takes too long to execute, the behaviour of the system can
+be compromised.  \emph{Priority-inversion} can occur where a low
+priority ISR can block a higher-priority interrupt from occuring.
+Nested interrupts and interrupt masks can help aleviate symptoms here.  
+If the ISR takes too long to handle high-frequency interrupts, then
+successive interrupts may not be processed.  
+
+\newthought{It follows that slow operations,} such as drawing to the
+display, should be avoided in ISRs.
+  
+\subsection{Communications}
+The ISR takes no parameters and returns no values.  This makes
+communicating with the rest of the program difficult.  The only way to
+pass information from the IST to other parts of the program is to use
+\emph{global variables}.  This introduces many potential problems so
+extreme care is needed.  Good use of \texttt{static} and scoping rules
+restricts access to only those parts that need it.  Ideally use 
+variables that can be updated in a single (assembly) operation.
+
+There may be other cases, such as an ISR handling communications via
+serial, ethernet, or CAN.  In these cases a shared buffer can be used,
+and care taken to avoid the problems raised by simultaneous access of
+producer and consumer parts of the program.
+
+\begin{exercise}{Git download of initial code}{initial}
+\begin{minted}[frame=leftline,framerule=1mm,rulecolor=\color{cmd}]{bash}
+$ git
+\end{minted}
+%$
+\end{exercise}
+\begin{question}{enum and switch}{switch}
+\begin{tcolorbox}[colframe=red!50!black,title=Solution]
+\end{tcolorbox}
+\end{question}
+
+\bibliographystyle{plainnat}
+\bibliography{lpc4088}
+
+\clearpage
+\appendix
+
+\end{document}
+
+%% Local Variables:
+%% mode: reftex
+%% mode: auto-fill
+%% mode: flyspell
+%% End:
